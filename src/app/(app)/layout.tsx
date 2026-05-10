@@ -3,17 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  Receipt,
-  Package,
-  Settings,
-  Plus,
-  Menu,
-  X,
-} from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Receipt, Package, Settings, Plus, Menu } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Accueil', icon: LayoutDashboard },
@@ -26,81 +16,48 @@ const navItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth >= 1024) setMobileOpen(false);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    setShowMenu(false);
+  }, [pathname]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Desktop sidebar - only on desktop */}
-      {!isMobile && (
-        <div style={{
-          width: '240px',
-          backgroundColor: '#2D2D2D',
-          display: 'flex',
-          flexDirection: 'column',
-          flexShrink: 0,
-          height: '100vh',
-          position: 'sticky',
-          top: 0
-        }}>
-          <div style={{ padding: '24px' }}>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>
-              Devis<span style={{ color: '#E85D04' }}>BTP</span>
-            </h1>
-          </div>
-          <nav style={{ flex: 1, padding: '0 12px', overflowY: 'auto' }}>
-            {navItems.map(item => {
-              const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    marginBottom: '4px',
-                    color: isActive ? 'white' : '#D1D5DB',
-                    backgroundColor: isActive ? '#E85D04' : 'transparent',
-                    textDecoration: 'none',
-                    fontWeight: 500,
-                  }}
-                >
-                  <item.icon size={20} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div style={{ padding: '16px' }}>
-            <Link
-              href="/devis/new"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                width: '100%',
-                padding: '12px',
-                backgroundColor: '#E85D04',
-                color: 'white',
-                borderRadius: '8px',
-                fontWeight: 500,
-                textDecoration: 'none',
-              }}
-            >
+    <div className="flex flex-col md:flex-row min-h-screen">
+      {/* Mobile: Top bar with menu button */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <button onClick={() => setShowMenu(true)} className="p-2 rounded-lg hover:bg-gray-100">
+          <Menu size={24} />
+        </button>
+        <span className="text-lg font-bold">Devis<span className="text-orange-500">BTP</span></span>
+        <div className="w-10" />
+      </div>
+
+      {/* Mobile menu overlay */}
+      {showMenu && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenu(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-64 bg-gray-900 p-6">
+            <div className="flex justify-between items-center mb-8">
+              <span className="text-xl font-bold text-white">Devis<span className="text-orange-500">BTP</span></span>
+              <button onClick={() => setShowMenu(false)} className="text-gray-400">✕</button>
+            </div>
+            <nav className="space-y-2">
+              {navItems.map(item => {
+                const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg ${active ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+                  >
+                    <item.icon size={20} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <Link href="/devis/new" className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-orange-500 text-white rounded-lg font-medium">
               <Plus size={20} />
               Nouveau devis
             </Link>
@@ -108,150 +65,34 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {/* Main content area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Mobile header */}
-        {isMobile && (
-          <div style={{
-            height: '56px',
-            backgroundColor: 'white',
-            borderBottom: '1px solid #E5E2DD',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 16px',
-            flexShrink: 0
-          }}>
-            <button
-              onClick={() => setMobileOpen(true)}
-              style={{
-                padding: '8px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: 'transparent',
-                cursor: 'pointer'
-              }}
-            >
-              <Menu size={24} />
-            </button>
-            <h1 style={{ marginLeft: '12px', fontSize: '18px', fontWeight: 'bold' }}>
-              Devis<span style={{ color: '#E85D04' }}>BTP</span>
-            </h1>
-          </div>
-        )}
+      {/* Desktop sidebar */}
+      <aside className="hidden md:block w-60 bg-gray-900 p-6 flex-shrink-0">
+        <h1 className="text-2xl font-bold text-white mb-8">Devis<span className="text-orange-500">BTP</span></h1>
+        <nav className="space-y-2">
+          {navItems.map(item => {
+            const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg ${active ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+              >
+                <item.icon size={20} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <Link href="/devis/new" className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-orange-500 text-white rounded-lg font-medium">
+          <Plus size={20} />
+          Nouveau devis
+        </Link>
+      </aside>
 
-        {/* Page content */}
-        <main style={{
-          flex: 1,
-          backgroundColor: '#FAFAFA',
-          padding: '16px',
-          overflowY: 'auto'
-        }}>
-          {children}
-        </main>
-      </div>
-
-      {/* Mobile sidebar overlay - always in DOM, hidden by default */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 50,
-        display: 'flex',
-        opacity: mobileOpen && isMobile ? 1 : 0,
-        visibility: mobileOpen && isMobile ? 'visible' : 'hidden',
-        transition: 'opacity 0.2s, visibility 0.2s'
-      }}>
-        <div
-          onClick={() => setMobileOpen(false)}
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.5)'
-          }}
-        />
-        <div style={{
-          width: '280px',
-          height: '100vh',
-          backgroundColor: '#2D2D2D',
-          display: 'flex',
-          flexDirection: 'column',
-          transform: mobileOpen && isMobile ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.2s'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '16px 24px'
-          }}>
-            <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>
-              Devis<span style={{ color: '#E85D04' }}>BTP</span>
-            </h1>
-            <button
-              onClick={() => setMobileOpen(false)}
-              style={{
-                padding: '8px',
-                color: '#D1D5DB',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <X size={24} />
-            </button>
-          </div>
-          <nav style={{ flex: 1, padding: '0 12px', overflowY: 'auto' }}>
-            {navItems.map(item => {
-              const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    marginBottom: '4px',
-                    color: isActive ? 'white' : '#D1D5DB',
-                    backgroundColor: isActive ? '#E85D04' : 'transparent',
-                    textDecoration: 'none',
-                    fontWeight: 500,
-                  }}
-                >
-                  <item.icon size={20} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div style={{ padding: '16px' }}>
-            <Link
-              href="/devis/new"
-              onClick={() => setMobileOpen(false)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                width: '100%',
-                padding: '12px',
-                backgroundColor: '#E85D04',
-                color: 'white',
-                borderRadius: '8px',
-                fontWeight: 500,
-                textDecoration: 'none',
-              }}
-            >
-              <Plus size={20} />
-              Nouveau devis
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* Main content */}
+      <main className="flex-1 p-4 md:p-8 bg-gray-50">
+        {children}
+      </main>
     </div>
   );
 }
